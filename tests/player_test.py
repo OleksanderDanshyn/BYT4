@@ -9,18 +9,6 @@ class DummyEffect(Effect):
     def __init__(self):
         super().__init__("Blessing", "Increases strength temporarily")
 
-class DummyWeapon(Weapon):
-    def __init__(self):
-        super().__init__("Sword", "Sharp blade", True, 50, 10, "sword")
-
-class DummyArmor(Armor):
-    def __init__(self):
-        super().__init__(5, "Armor", "Strong", True, 100)
-
-class DummyEnemy(Enemy):
-    def __init__(self):
-        super().__init__("drop", "Orc", 50, 5)
-
 class PlayerTest(unittest.TestCase):
     def test_valid_player(self):
         p = Player("Knight", 100, 500)
@@ -39,18 +27,19 @@ class PlayerTest(unittest.TestCase):
 
     def test_equip_weapon(self):
         p = Player("Archer", 100, 50)
-        w = DummyWeapon()
+        w = Weapon("Bow", "A hunting bow", True, 75, 8, "bow")
         p.equip_weapon(w)
         self.assertEqual(p.equipped_weapon, w)
 
     def test_equip_armor(self):
         p = Player("Warrior", 100, 50)
-        a = DummyArmor()
+        a = Armor(10, "Shield", "A strong shield", True, 100)
         p.equip_armor(a)
         self.assertEqual(p.equipped_armor, a)
 
     def test_slay_monster(self):
         p = Player("Knight", 100, 50)
-        e = DummyEnemy()
+        weapon = Weapon("Club", "A wooden club", True, 20, 5, "hammer")
+        e = Enemy(weapon, "Orc", 50, 5)
         p.slay_monster(e)
         self.assertIn(e, p.kills)
