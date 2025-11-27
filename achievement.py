@@ -35,11 +35,6 @@ class Achievement(ExtentBase):
     def completed_at(self) -> datetime | None:
         return self._completed_at
 
-    @completed_at.setter
-    def completed_at(self, _) -> None:
-        if self.completed_at is None:
-            self._completed_at = datetime.now()
-
     @staticmethod
     def get_all() -> list["Achievement"]:
         return Achievement._extent.copy()
@@ -48,4 +43,6 @@ class Achievement(ExtentBase):
     def get_completed() -> list["Achievement"]:
         return list(filter(lambda a: a.completed_at is not None, Achievement._extent))
 
-
+    def complete(self):
+        if self._completed_at is None:
+            self._completed_at = datetime.now()
