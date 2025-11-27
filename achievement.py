@@ -1,12 +1,11 @@
 from typing import Iterable
 
+from extentbase import ExtentBase
 from items.item import Item
 from utils import is_nonempty_str
 
 
-class Achievement:
-    _extent: list["Achievement"] = []  # extent
-
+class Achievement(ExtentBase):
     title: str  # basic
     description: str  # basic
     is_completed: bool = False  # basic (NON-STATIC!)
@@ -20,7 +19,7 @@ class Achievement:
         self.difficulty_rating = difficulty_rating
         self._rewards = list(rewards)
 
-        Achievement._extent.append(self)
+        super().__init__()
 
     @property
     def rewards(self) -> list[Item]:
