@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable
 
 from extentbase import ExtentBase
@@ -8,7 +9,7 @@ from utils import is_nonempty_str
 class Achievement(ExtentBase):
     title: str  # basic
     description: str  # basic
-    is_completed: bool = False  # basic (NON-STATIC!)
+    completed_at: datetime | None = None  # basic (NON-STATIC!)
     difficulty_rating: int  # basic
     _rewards: list[Item]  # multi-value
     base_money_scalar: int = 5  # static
@@ -18,6 +19,7 @@ class Achievement(ExtentBase):
         self.description = description if is_nonempty_str(description) else None
         self.difficulty_rating = difficulty_rating
         self._rewards = list(rewards)
+        self.completed_at = None
 
         super().__init__()
 
@@ -30,5 +32,14 @@ class Achievement(ExtentBase):
         return Achievement.base_money_scalar * self.difficulty_rating
 
     @staticmethod
-    def get_all():
+    def get_all() -> list["Achievement"]:
         return Achievement._extent.copy()
+
+    @staticmethod
+    def get_completed() -> list["Achievement"]:
+        return list(filter(lambda a: a.completed_at is not None, Achievement._extent))
+
+    def complete(self) -> None:
+        if self.completed_at is None:
+            self.completed_at = datetime.now()
+
