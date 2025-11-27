@@ -9,7 +9,7 @@ from utils import is_nonempty_str
 class Achievement(ExtentBase):
     title: str  # basic
     description: str  # basic
-    completed_at: datetime | None = None  # optional, complex
+    _completed_at: datetime | None = None  # optional, complex
     difficulty_rating: int  # basic
     _rewards: list[Item]  # multi-value
     base_money_scalar: int = 5  # static
@@ -19,7 +19,7 @@ class Achievement(ExtentBase):
         self.description = description if is_nonempty_str(description) else None
         self.difficulty_rating = difficulty_rating
         self._rewards = list(rewards)
-        self.completed_at = None
+        self._completed_at = None
 
         super().__init__()
 
@@ -31,6 +31,15 @@ class Achievement(ExtentBase):
     def money_reward(self) -> int:  # derived
         return Achievement.base_money_scalar * self.difficulty_rating
 
+    @property
+    def completed_at(self) -> datetime | None:
+        return self._completed_at
+
+    @completed_at.setter
+    def completed_at(self, _) -> None:
+        if self.completed_at is None:
+            self._completed_at = datetime.now()
+
     @staticmethod
     def get_all() -> list["Achievement"]:
         return Achievement._extent.copy()
@@ -39,7 +48,4 @@ class Achievement(ExtentBase):
     def get_completed() -> list["Achievement"]:
         return list(filter(lambda a: a.completed_at is not None, Achievement._extent))
 
-    def complete(self) -> None:
-        if self.completed_at is None:
-            self.completed_at = datetime.now()
 
