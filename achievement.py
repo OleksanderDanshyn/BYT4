@@ -9,7 +9,7 @@ from utils import is_nonempty_str
 class Achievement(ExtentBase):
     title: str  # basic
     description: str  # basic
-    completed_at: datetime | None = None  # basic (NON-STATIC!)
+    completed_at: datetime | None = None  # optional, complex
     difficulty_rating: int  # basic
     _rewards: list[Item]  # multi-value
     base_money_scalar: int = 5  # static
