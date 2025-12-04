@@ -152,7 +152,6 @@ class Player(Entity):
 
         self.kills.append(enemy)
 
-
     def add_pet(self, pet):
 
         if pet in self.pets:
@@ -162,4 +161,3 @@ class Player(Entity):
             raise TypeError("Pet must be an Friendly instance.")
 
         self.pets.append(pet)
-
