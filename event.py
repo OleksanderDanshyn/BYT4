@@ -96,6 +96,7 @@ class Event:
                 cls._extent = pickle.load(file)
         else:
             cls._extent = []
+
     @classmethod
     def clear_extent(cls):
         cls._extent = []
