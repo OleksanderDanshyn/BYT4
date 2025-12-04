@@ -151,3 +151,15 @@ class Player(Entity):
             raise ValueError("Enemy already recorded as slain.")
 
         self.kills.append(enemy)
+
+
+    def add_pet(self, pet):
+
+        if pet in self.pets:
+            raise ValueError("Pet already in pet list.")
+
+        if not isinstance(pet, Friendly):
+            raise TypeError("Pet must be an Friendly instance.")
+
+        self.pets.append(pet)
+
