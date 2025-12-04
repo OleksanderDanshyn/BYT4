@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from effect import Effect
 from entities.enemy import Enemy
 from entities.entity import Entity
+from entities.friendly import Friendly
 from items.armor import Armor
 from items.inventory import Inventory
 from items.weapon import Weapon
@@ -152,6 +153,7 @@ class Player(Entity):
 
         self.kills.append(enemy)
 
+    # pet aggregation association implementation?
     def add_pet(self, pet):
 
         if pet in self.pets:
