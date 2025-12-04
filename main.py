@@ -2,6 +2,10 @@ import random
 import streamlit as st
 from entities.enemy import Enemy
 from entities.player import Player
+from items.weapon import Weapon
+from items.armor import Armor
+from items.potion import Potion
+from items.food import Food
 
 if "player" not in st.session_state:
     st.session_state.player = Player("Hero", 300, 100)
@@ -28,10 +32,7 @@ def generate_unique_item_name(item, inventory):
 
 
 def enemy_generator():
-    from items.weapon import Weapon
-    from items.armor import Armor
-    from items.potion import Potion
-    from items.food import Food
+
 
     drop_options = [
         Weapon(
@@ -144,7 +145,6 @@ def attack():
     return msg
 
 
-
 def run():
     if st.session_state.current_enemy:
         st.session_state.current_enemy = None
@@ -195,24 +195,30 @@ with st.sidebar.expander(f"🎒 Inventory ({len(st.session_state.player.inventor
                 elif hasattr(item, "saturation"):
                     st.caption(f"🍖 Saturation: {item.saturation}")
                 st.caption(f"💰 Sell: {item.sell_price}g")
+
             with col2:
                 if st.button("Use", key=f"use_item_{idx}", use_container_width=True):
+
                     if hasattr(item, "damage"):
                         st.session_state.player.equip_weapon(item)
                         msg = f"⚔️ Equipped {item.name}!"
+
                     elif hasattr(item, "toughness"):
                         st.session_state.player.equip_armor(item)
                         msg = f"🛡️ Equipped {item.name}!"
+
                     elif hasattr(item, "power"):
                         msg = item.use_on_player(st.session_state.player)
                         if item.number_of_uses <= 0:
                             st.session_state.player.inventory.remove_item(item)
                         if st.session_state.current_enemy:
                             msg += enemy_attack()
+
                     elif hasattr(item, "saturation"):
                         st.session_state.player.hunger = min(st.session_state.player.hunger + item.saturation, 10)
                         st.session_state.player.inventory.remove_item(item)
                         msg = f"🍖 Ate {item.name}! Restored {item.saturation} hunger."
+
                         if st.session_state.current_enemy:
                             msg += enemy_attack()
                     else:
@@ -220,12 +226,16 @@ with st.sidebar.expander(f"🎒 Inventory ({len(st.session_state.player.inventor
                     st.session_state.messages.append({"role": "user", "content": f"use {item.name}"})
                     st.session_state.messages.append({"role": "assistant", "content": msg})
                     st.rerun()
+
             with col3:
                 if st.button("Drop", key=f"drop_item_{idx}", use_container_width=True):
+
                     if st.session_state.player.equipped_weapon == item:
                         st.session_state.player.equipped_weapon = None
+
                     if st.session_state.player.equipped_armor == item:
                         st.session_state.player.equipped_armor = None
+
                     st.session_state.player.inventory.remove_item(item)
                     msg = f"🗑️ Dropped {item.name}!"
                     st.session_state.messages.append({"role": "user", "content": f"drop {item.name}"})
