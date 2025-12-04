@@ -20,7 +20,8 @@ class Player(Entity):
         self.equipped_armor = None
         self.equipped_weapon = None
         self.money = money
-        self.inventory = Inventory()
+
+        self.inventory = Inventory(self)
 
         self.kills = []
 
@@ -38,15 +39,30 @@ class Player(Entity):
             raise TypeError("Money must be an integer.")
         self._money = value
 
-
     def equip_weapon(self, weapon):
-        if isinstance(weapon, Weapon):
-            self.equipped_weapon = weapon
+        if weapon is None:
+            raise ValueError("Weapon cannot be None.")
+
+        if not isinstance(weapon, Weapon):
+            raise TypeError("Must equip a Weapon instance.")
+
+        if weapon.name not in self.inventory.items:
+            raise ValueError("Cannot equip a weapon not in inventory.")
+
+        self.equipped_weapon = weapon
 
 
     def equip_armor(self, armor):
-        if isinstance(armor, Armor):
-            self.equipped_armor = armor
+        if armor is None:
+            raise ValueError("Armor cannot be None.")
+
+        if not isinstance(armor, Armor):
+            raise TypeError("Must equip an Armor instance.")
+
+        if armor.name not in self.inventory.items:
+            raise ValueError("Cannot equip an armor not in inventory.")
+
+        self.equipped_armor = armor
 
 
     def apply_effect(self, effect, potion):
@@ -127,7 +143,11 @@ class Player(Entity):
             return self.active_effects[effect]['potion']
         return None
 
-
     def slay_monster(self, enemy):
-        if isinstance(enemy, Enemy):
-            self.kills.append(enemy)
+        if not isinstance(enemy, Enemy):
+            raise TypeError("Can only slay Enemy instances.")
+
+        if enemy in self.kills:
+            raise ValueError("Enemy already recorded as slain.")
+
+        self.kills.append(enemy)
