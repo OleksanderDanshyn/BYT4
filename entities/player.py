@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from effect import Effect
 from entities.enemy import Enemy
 from entities.entity import Entity
@@ -21,8 +22,9 @@ class Player(Entity):
         self.money = money
         self.inventory = Inventory()
 
-        self.effects = []
         self.kills = []
+
+        self.active_effects = {}
 
         Player._extent.append(self)
 
@@ -36,6 +38,7 @@ class Player(Entity):
             raise TypeError("Money must be an integer.")
         self._money = value
 
+
     def equip_weapon(self, weapon):
         if isinstance(weapon, Weapon):
             self.equipped_weapon = weapon
@@ -46,13 +49,85 @@ class Player(Entity):
             self.equipped_armor = armor
 
 
-    def apply_effect(self, effect):
-        if isinstance(effect, Effect):
-            self.effects.append(effect)
+    def apply_effect(self, effect, potion):
+        if not isinstance(effect, Effect):
+            raise TypeError("effect must be an Effect instance.")
+        from items.potion import Potion
+        if not isinstance(potion, Potion):
+            raise TypeError("potion must be a Potion instance.")
+
+        self.active_effects[effect] = {
+            'potion': potion,
+            'start_time': datetime.now(),
+            'duration': potion.duration
+        }
+
+
+    def remove_effect(self, effect):
+        if effect in self.active_effects:
+            del self.active_effects[effect]
+
+
+    def is_effect_expired(self, effect):
+        if effect not in self.active_effects:
+            return True
+
+        effect_data = self.active_effects[effect]
+        duration = effect_data['duration']
+
+        if duration == 0:
+            return True
+
+        start_time = effect_data['start_time']
+        end_time = start_time + timedelta(seconds=duration)
+        return datetime.now() >= end_time
+
+
+    def get_effect_time_remaining(self, effect):
+        if effect not in self.active_effects:
+            return 0
+
+        effect_data = self.active_effects[effect]
+        duration = effect_data['duration']
+
+        if duration == 0:
+            return 0
+
+        start_time = effect_data['start_time']
+        end_time = start_time + timedelta(seconds=duration)
+
+        if datetime.now() >= end_time:
+            return 0
+
+        remaining = (end_time - datetime.now()).total_seconds()
+        return max(0, remaining)
+
+
+    def remove_expired_effects(self):
+        expired_effects = [effect for effect in self.active_effects.keys()
+                           if self.is_effect_expired(effect)]
+        for effect in expired_effects:
+            self.remove_effect(effect)
+
+
+    def get_active_effect_names(self):
+        self.remove_expired_effects()
+        result = []
+        for effect, data in self.active_effects.items():
+            if data['duration'] == 0:
+                result.append(f"{effect.name} (instant)")
+            else:
+                time_left = self.get_effect_time_remaining(effect)
+                result.append(f"{effect.name} ({int(time_left)}s remaining)")
+        return result
+
+
+    def get_effect_potion(self, effect):
+        if effect in self.active_effects:
+            return self.active_effects[effect]['potion']
+        return None
 
 
     def slay_monster(self, enemy):
         if isinstance(enemy, Enemy):
             self.kills.append(enemy)
-
-
