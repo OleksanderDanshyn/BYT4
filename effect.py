@@ -20,6 +20,29 @@ class Effect:
             raise ValueError("Effect description cannot be empty or just spaces.")
         self.description = description
 
+        self._potions = []
+
+    @property
+    def potions(self):
+        return self._potions.copy()
+
+    def add_potion(self, potion):
+        if potion not in self._potions:
+            self._potions.append(potion)
+
+    def remove_potion(self, potion):
+        if potion in self._potions:
+            self._potions.remove(potion)
+
+
+    def delete(self):
+        for p in self._potions:
+            p.effect = None
+        self._potions.clear()
+
+        if self in self.__class__._extent:
+            self.__class__._extent.remove(self)
+
 
     @classmethod
     def get_extent(cls):
@@ -41,7 +64,3 @@ class Effect:
     @classmethod
     def clear_extent(cls):
         cls._extent = []
-
-    def delete(self):
-        if self in self.__class__._extent:
-            self.__class__._extent.remove(self)

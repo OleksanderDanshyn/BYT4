@@ -6,6 +6,8 @@ class Enemy(NPC):
         super().__init__(drop, name, current_health)
         self.damage = damage
 
+        self.killed_by = []  # reverse association
+
     @property
     def damage(self):
         return self._damage
@@ -15,3 +17,7 @@ class Enemy(NPC):
         if not isinstance(value, int):
             raise TypeError("damage must be a number.")
         self._damage = value
+
+    def add_killer(self, player):
+        if player not in self.killed_by:
+            self.killed_by.append(player)

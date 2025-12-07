@@ -152,6 +152,7 @@ class Player(Entity):
             raise ValueError("Enemy already recorded as slain.")
 
         self.kills.append(enemy)
+        enemy.add_killer(self)
 
     # pet aggregation association implementation?
     def add_pet(self, pet):

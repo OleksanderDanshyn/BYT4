@@ -32,8 +32,6 @@ def generate_unique_item_name(item, inventory):
 
 
 def enemy_generator():
-
-
     drop_options = [
         Weapon(
             name="Iron Sword",

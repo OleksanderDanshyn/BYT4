@@ -11,6 +11,7 @@ class Item:
         if type(self) == Item:
             raise TypeError("Item is abstract - instantiate a subclass")
 
+        self.inventory = None
         self.name = name
         self.description = description
         self.buyable = buyable

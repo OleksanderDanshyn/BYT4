@@ -20,6 +20,24 @@ class Potion(Consumable):
             raise TypeError("effect must be an Effect instance or None.")
         self.effect = effect
 
+    @property
+    def effect(self):
+        return self._effect
+
+    @effect.setter
+    def effect(self, new_effect):
+        from effect import Effect
+
+        if self.effect is not None:
+            self.effect.remove_potion(self)
+
+        if new_effect is not None:
+            if not isinstance(new_effect, Effect):
+                raise TypeError("effect must be an Effect instance or None.")
+            new_effect.add_potion(self)
+
+        self._effect = new_effect
+
 
     def use_on_player(self, player):
         from entities.player import Player

@@ -13,8 +13,10 @@ class Inventory:
         self.items = {}
         self.max_size = max_size
 
+
     def __len__(self):
         return len(self.items)
+
 
     def __iter__(self):
         return iter(self.items.values())
@@ -35,6 +37,8 @@ class Inventory:
             raise OverflowError("Inventory is full.")
 
         self.items[item.name] = item
+        item.inventory = self
+
         return True, f"Item '{item.name}' added successfully."
 
 
@@ -44,8 +48,13 @@ class Inventory:
         if key not in self.items:
             raise ValueError(f"Item '{key}' not found in inventory.")
 
+        item = self.items[key]
         del self.items[key]
+
+        item.inventory = None
+
         return True, f"Item '{key}' removed successfully."
+
 
     def get_item(self, name):
         return self.items.get(name, None)
