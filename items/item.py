@@ -1,11 +1,15 @@
-from extentbase import ExtentBase
+import pickle
+import os
 
-class Item(ExtentBase):
+
+class Item:
+    _extent = []
+
     def __init__(self, name, description, buyable, sell_price):
-        super().__init__()
+        self.__class__._extent.append(self)
 
         if type(self) == Item:
-            raise TypeError("Item is abstract - instantiate a specific subclass (Weapon, Armor, etc.)")
+            raise TypeError("Item is abstract - instantiate a subclass")
 
         self.name = name
         self.description = description
@@ -28,7 +32,6 @@ class Item(ExtentBase):
             raise ValueError("Name cannot exceed 30 characters.")
         self._name = value
 
-
     @property
     def description(self):
         return self._description
@@ -43,7 +46,6 @@ class Item(ExtentBase):
             raise ValueError("Description cannot exceed 50 characters.")
         self._description = value
 
-
     @property
     def buyable(self):
         return self._buyable
@@ -51,9 +53,8 @@ class Item(ExtentBase):
     @buyable.setter
     def buyable(self, value):
         if not isinstance(value, bool):
-            raise TypeError("Buyable must be a boolean (True or False).")
+            raise TypeError("Buyable must be a boolean.")
         self._buyable = value
-
 
     @property
     def sell_price(self):
@@ -63,7 +64,32 @@ class Item(ExtentBase):
     def sell_price(self, value):
         if not isinstance(value, int):
             raise TypeError("Sell price must be a number.")
-
         if value < 0:
             raise ValueError("Sell price cannot be negative.")
         self._sell_price = value
+
+
+    @classmethod
+    def get_extent(cls):
+        return cls._extent.copy()
+
+    @classmethod
+    def save_extent(cls, filename="items.dat"):
+        with open(filename, "wb") as file:
+            pickle.dump(cls._extent, file)
+
+    @classmethod
+    def load_extent(cls, filename="items.dat"):
+        if os.path.exists(filename):
+            with open(filename, "rb") as file:
+                cls._extent = pickle.load(file)
+        else:
+            cls._extent = []
+
+    @classmethod
+    def clear_extent(cls):
+        cls._extent = []
+
+    def delete(self):
+        if self in self.__class__._extent:
+            self.__class__._extent.remove(self)
