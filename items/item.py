@@ -2,6 +2,9 @@ import pickle
 import os
 from entities.npc import NPC
 from entities.trader import Trader
+from items.armor import Armor
+from items.potion import Potion
+from items.weapon import Weapon
 
 
 class Item:
@@ -17,11 +20,151 @@ class Item:
         self._holders = []
         self._traders = []
 
+        self._components = []
+        self._combined_into = None
+
         self.name = name
         self.description = description
         self.buyable = buyable
         self.sell_price = sell_price
         self.buy_price = sell_price * 1.2
+
+
+    def add_component(self, item):
+        if not isinstance(item, Item):
+            raise TypeError("Component must be an Item object.")
+        if item == self:
+            raise ValueError("Item cannot be a component of itself.")
+        if item not in self._components:
+            self._components.append(item)
+            item._combined_into = self
+
+
+    def remove_component(self, item):
+        if item in self._components:
+            self._components.remove(item)
+            item._combined_into = None
+
+
+    def get_components(self):
+        return self._components.copy()
+
+
+    def get_combined_into(self):
+        return self._combined_into
+
+
+    def is_component(self):
+        return self._combined_into is not None
+
+
+    @classmethod
+    def combine_items(cls, item1, item2, new_name=None):
+        if type(item1) != type(item2):
+            raise TypeError("Can only combine items of the same type.")
+
+        if item1.is_component() or item2.is_component():
+            raise ValueError("Cannot combine items that are already used as components.")
+
+        if isinstance(item1, Weapon):
+            return cls._combine_weapons(item1, item2, new_name)
+        elif isinstance(item1, Armor):
+            return cls._combine_armors(item1, item2, new_name)
+        elif isinstance(item1, Potion):
+            return cls._combine_potions(item1, item2, new_name)
+        else:
+            raise TypeError(f"Combining not supported for {type(item1).__name__}")
+
+
+    @classmethod
+    def _combine_weapons(cls, weapon1, weapon2, new_name):
+        from items.weapon import Weapon
+
+        if weapon1.type != weapon2.type:
+            raise ValueError(f"Cannot combine {weapon1.type} with {weapon2.type}")
+
+        combined_damage = weapon1.damage + weapon2.damage
+        combined_price = weapon1.sell_price + weapon2.sell_price
+
+        if new_name is None:
+            new_name = f"Enhanced {weapon1.type.capitalize()}"
+
+        new_description = f"Forged from two {weapon1.type}s"
+
+        combined = Weapon(
+            name=new_name,
+            description=new_description,
+            buyable=weapon1.buyable and weapon2.buyable,
+            sell_price=combined_price,
+            damage=combined_damage,
+            type=weapon1.type
+        )
+
+        combined.add_component(weapon1)
+        combined.add_component(weapon2)
+
+        return combined
+
+
+    @classmethod
+    def _combine_armors(cls, armor1, armor2, new_name):
+        from items.armor import Armor
+
+        combined_toughness = armor1.toughness + armor2.toughness
+        combined_price = armor1.sell_price + armor2.sell_price
+
+        if new_name is None:
+            new_name = f"Reinforced Armor"
+
+        new_description = f"Combined protection from two armor pieces"
+
+        combined = Armor(
+            toughness=combined_toughness,
+            name=new_name,
+            description=new_description,
+            buyable=armor1.buyable and armor2.buyable,
+            sell_price=combined_price
+        )
+
+        combined.add_component(armor1)
+        combined.add_component(armor2)
+
+        return combined
+
+
+    @classmethod
+    def _combine_potions(cls, potion1, potion2, new_name):
+        from items.potion import Potion
+
+        if potion1.effect != potion2.effect:
+            raise ValueError("Can only combine potions with the same effect")
+
+        combined_power = potion1.power + potion2.power
+        combined_duration = max(potion1.duration, potion2.duration)
+        combined_uses = potion1.number_of_uses + potion2.number_of_uses
+        combined_price = potion1.sell_price + potion2.sell_price
+
+        if new_name is None:
+            new_name = f"Greater {potion1.name}"
+
+        new_description = f"A more potent mixture"
+
+        combined = Potion(
+            name=new_name,
+            description=new_description,
+            buyable=potion1.buyable and potion2.buyable,
+            sell_price=combined_price,
+            number_of_uses=combined_uses,
+            duration=combined_duration,
+            power=combined_power,
+            effect=potion1.effect
+        )
+
+        combined.add_component(potion1)
+        combined.add_component(potion2)
+
+        return combined
+
 
     def add_holder(self, npc):
         if not isinstance(npc, NPC):
@@ -142,6 +285,12 @@ class Item:
         cls._extent = []
 
     def delete(self):
+        for component in self._components.copy():
+            self.remove_component(component)
+
+        if self._combined_into is not None:
+            self._combined_into.remove_component(self)
+
         for holder in self._holders.copy():
             if holder.drop == self:
                 holder.drop = None

@@ -1,9 +1,11 @@
-from items.consumanble import Consumable
 from effect import Effect
+from items.consumanble import Consumable
+
 
 class Potion(Consumable):
     def __init__(self, name, description, buyable, sell_price, number_of_uses, duration, power, effect=None):
         super().__init__(number_of_uses, name, description, buyable, sell_price)
+
         if not isinstance(duration, int):
             raise TypeError("Duration must be a number.")
         if duration < 0:
@@ -16,6 +18,7 @@ class Potion(Consumable):
             raise ValueError("Power cannot be negative.")
         self.power = power
 
+        self._effect = None
         if effect is not None and not isinstance(effect, Effect):
             raise TypeError("effect must be an Effect instance or None.")
         self.effect = effect
@@ -28,8 +31,8 @@ class Potion(Consumable):
     def effect(self, new_effect):
         from effect import Effect
 
-        if self.effect is not None:
-            self.effect.remove_potion(self)
+        if self._effect is not None:
+            self._effect.remove_potion(self)
 
         if new_effect is not None:
             if not isinstance(new_effect, Effect):
@@ -37,7 +40,6 @@ class Potion(Consumable):
             new_effect.add_potion(self)
 
         self._effect = new_effect
-
 
     def use_on_player(self, player):
         from entities.player import Player

@@ -20,6 +20,26 @@ class Activity:
             raise ValueError("Activity description cannot be empty or just spaces.")
         self.description = description
 
+        self._tools = []
+
+    @property
+    def tools(self):
+        return self._tools.copy()
+
+    def add_tool(self, tool):
+        if tool not in self._tools:
+            self._tools.append(tool)
+
+    def remove_tool(self, tool):
+        if tool in self._tools:
+            self._tools.remove(tool)
+
+    def delete(self):
+        for tool in self._tools.copy():
+            tool.activity = None  # Uses property setter which calls remove_tool
+
+        if self in self.__class__._extent:
+            self.__class__._extent.remove(self)
 
     @classmethod
     def get_extent(cls):
@@ -41,7 +61,3 @@ class Activity:
     @classmethod
     def clear_extent(cls):
         cls._extent = []
-
-    def delete(self):
-        if self in self.__class__._extent:
-            self.__class__._extent.remove(self)

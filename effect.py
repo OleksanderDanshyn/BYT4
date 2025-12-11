@@ -34,15 +34,12 @@ class Effect:
         if potion in self._potions:
             self._potions.remove(potion)
 
-
     def delete(self):
-        for p in self._potions:
-            p.effect = None
-        self._potions.clear()
+        for potion in self._potions.copy():
+            potion.effect = None
 
         if self in self.__class__._extent:
             self.__class__._extent.remove(self)
-
 
     @classmethod
     def get_extent(cls):
