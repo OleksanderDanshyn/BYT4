@@ -1,68 +1,85 @@
 import unittest
-from datetime import datetime, timedelta
-from unittest.mock import patch
 
+from entities.player import Player
 from effect import Effect
 from items.potion import Potion
-from entities.player import Player
+from activity import Activity
+from playereffect import PlayerEffect
 
 
-class TestPlayerEffectAssociation(unittest.TestCase):
+class TestPlayerEffectAssociations(unittest.TestCase):
 
     def setUp(self):
-        self.effect = Effect("Strength", "Boosts attack")
+        self.player = Player("Hero", current_health=10, money=100)
+        self.effect = Effect("Strength", "Increase power")
+
         self.potion = Potion(
-            name="Heal",
-            description="Restores health",
+            name="Strength Potion",
+            description="Buff",
             buyable=True,
             sell_price=10,
             number_of_uses=1,
-            duration=5,
-            power=3,
+            duration=3,
+            power=0,
             effect=self.effect
         )
-        self.player = Player("Hero", current_health=5, money=100)
 
-    def test_player_apply_effect_creates_association(self):
-        self.player.apply_effect(self.effect, self.potion)
+        self.activity = Activity(
+            name="Meditate",
+            description="Focus",
+            effect=self.effect,
+            effect_duration=5
+        )
 
-        self.assertIn(self.effect, self.player.active_effects)
-        data = self.player.active_effects[self.effect]
+    def test_apply_effect_from_potion(self):
+        self.player.apply_effect(self.effect, self.potion, current_turn=1)
 
-        self.assertEqual(data["potion"], self.potion)
-        self.assertEqual(data["duration"], self.potion.duration)
-        self.assertIsInstance(data["start_time"], datetime)
+        self.assertEqual(len(self.player.active_effects), 1)
+        pe = self.player.active_effects[0]
 
-    def test_player_apply_effect_rejects_invalid_effect(self):
+        self.assertIs(pe.effect, self.effect)
+        self.assertIs(pe.source, self.potion)
+        self.assertEqual(pe.source_type, "potion")
+        self.assertEqual(pe.start_turn, 1)
+
+    def test_apply_effect_from_activity(self):
+        self.player.apply_effect_from_activity(self.effect, self.activity, current_turn=2)
+
+        self.assertEqual(len(self.player.active_effects), 1)
+        pe = self.player.active_effects[0]
+
+        self.assertIs(pe.effect, self.effect)
+        self.assertIs(pe.source, self.activity)
+        self.assertEqual(pe.source_type, "activity")
+        self.assertEqual(pe.start_turn, 2)
+
+    def test_apply_effect_invalid_types(self):
         with self.assertRaises(TypeError):
-            self.player.apply_effect("invalid", self.potion)
+            self.player.apply_effect("bad", self.potion, 1)
 
-    def test_player_apply_effect_rejects_invalid_potion(self):
         with self.assertRaises(TypeError):
-            self.player.apply_effect(self.effect, "invalid")
+            self.player.apply_effect(self.effect, "bad", 1)
 
-    def test_remove_effect(self):
-        self.player.apply_effect(self.effect, self.potion)
-        self.player.remove_effect(self.effect)
+    def test_effect_expires_after_duration(self):
+        self.player.apply_effect(self.effect, self.potion, current_turn=1)
 
-        self.assertNotIn(self.effect, self.player.active_effects)
+        self.player.remove_expired_effects(current_turn=4)
 
-    def test_remove_effect_if_not_applied(self):
-        self.player.remove_effect(self.effect)
+        self.assertEqual(len(self.player.active_effects), 0)
 
-    def test_effect_expires_correctly(self):
-        self.player.apply_effect(self.effect, self.potion)
+    def test_has_effect(self):
+        self.player.apply_effect(self.effect, self.potion, current_turn=1)
+        self.assertTrue(self.player.has_effect(self.effect, 2))
+        self.assertFalse(self.player.has_effect(self.effect, 10))
 
-        fake_start = datetime.now() - timedelta(seconds=100)
-        self.player.active_effects[self.effect]["start_time"] = fake_start
+    def test_get_effect_by_type(self):
+        self.player.apply_effect(self.effect, self.potion, current_turn=1)
+        pe = self.player.get_effect_by_type(self.effect, 2)
+        self.assertIsInstance(pe, PlayerEffect)
 
-        self.assertTrue(self.player.is_effect_expired(self.effect))
+    def test_get_active_effect_names(self):
+        self.player.apply_effect(self.effect, self.potion, current_turn=1)
+        names = self.player.get_active_effect_names(current_turn=2)
 
-    def test_remove_expired_effects(self):
-        self.player.apply_effect(self.effect, self.potion)
-
-        self.player.active_effects[self.effect]["start_time"] = datetime.now() - timedelta(seconds=10)
-
-        self.player.remove_expired_effects()
-
-        self.assertNotIn(self.effect, self.player.active_effects)
+        self.assertEqual(len(names), 1)
+        self.assertIn("Strength (2 turns remaining)", names[0])

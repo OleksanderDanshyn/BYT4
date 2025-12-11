@@ -78,3 +78,20 @@ class TestInventoryItemAssociation(unittest.TestCase):
         self.assertTrue(self.inventory.is_empty())
         self.inventory.add_item(self.item1)
         self.assertFalse(self.inventory.is_empty())
+
+    def test_add_item_sets_reverse_inventory_reference(self):
+        self.inventory.add_item(self.item1)
+        self.assertIs(self.item1.inventory, self.inventory)
+
+    def test_remove_item_clears_reverse_inventory_reference(self):
+        self.inventory.add_item(self.item1)
+        self.inventory.remove_item(self.item1)
+        self.assertIsNone(self.item1.inventory)
+
+    def test_inventory_does_not_duplicate_reverse_references_on_readding(self):
+        self.inventory.add_item(self.item1)
+        self.inventory.remove_item(self.item1)
+        self.inventory.add_item(self.item1)
+
+        self.assertIs(self.item1.inventory, self.inventory)
+        self.assertEqual(len(self.inventory.items), 1)
