@@ -9,13 +9,17 @@ class Event:
     _extent: list["Event"] = []
     types_list = ["safe", "standard", "dangerous"]
 
-    def __init__(self, name, event_type, optional, difficulty, item_reward, Player):
+    def __init__(self, name, event_type, optional, difficulty, item_reward, player, event_logic):
         self.name = name
         self.event_type = event_type
         self.optional = optional
         self.difficulty = difficulty
         self.item_reward = item_reward
-        self.money_reward = abs((Player.max_health - Player.current_health))*difficulty
+        self.money_reward = abs((player.max_health - player.current_health)) * difficulty
+        self.event_logic = event_logic
+
+    def check_event_success(self) -> bool:
+        return bool(self.event_logic())
 
     @property
     def name(self):
@@ -76,7 +80,7 @@ class Event:
         if not isinstance(value, Item.__class__):
             raise TypeError("item_reward must be an Item.")
 
-        self.item = value
+        self.item_reward = value
 
     @classmethod
     def get_extent(cls):

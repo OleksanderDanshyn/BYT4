@@ -2,6 +2,7 @@ from effect import Effect
 from entities.enemy import Enemy
 from entities.entity import Entity
 from entities.friendly import Friendly
+from event import Event
 from items.armor import Armor
 from items.inventory import Inventory
 from items.weapon import Weapon
@@ -169,3 +170,12 @@ class Player(Entity):
 
         self.pets.remove(pet)
         pet._owner = None
+
+    def experience_event(self, event):
+
+        if not isinstance(event, Event):
+            raise TypeError("Event must be an Event instance.")
+
+        if event.check_event_success() is True:
+            self.inventory.add_item(event.item_reward)
+            self.money.__add__(event.money_reward)
