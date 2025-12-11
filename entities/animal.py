@@ -5,7 +5,6 @@ from items.food import Food
 class Animal(NPC):
     def __init__(self, drop, name, current_health, rideable, favourite_food):
         super().__init__(drop, name, current_health)
-
         if not isinstance(rideable, bool):
             raise TypeError("Rideable status must be a boolean (True or False).")
         self.rideable = rideable
