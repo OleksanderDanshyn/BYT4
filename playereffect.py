@@ -1,32 +1,30 @@
-from datetime import datetime, timedelta
 from effect import Effect
 
-class PlayerEffect:
-    def __init__(self, player, effect, potion):
-        from items.potion import Potion
 
+class PlayerEffect:
+    def __init__(self, player, effect, source, source_type, duration_turns, start_turn):
         if not isinstance(effect, Effect):
             raise TypeError("effect must be an Effect instance.")
-        if not isinstance(potion, Potion):
-            raise TypeError("potion must be a Potion instance.")
+
+        if source_type not in ['potion', 'activity']:
+            raise ValueError("source_type must be 'potion' or 'activity'")
 
         self.player = player
         self.effect = effect
-        self.potion = potion
-        self.start_time = datetime.now()
-        self.duration = potion.duration
+        self.source = source
+        self.source_type = source_type
+        self.start_turn = start_turn
+        self.duration_turns = duration_turns
 
-    @property
-    def is_expired(self):
-        if self.duration == 0:
+
+    def is_expired(self, current_turn):
+        if self.duration_turns == 0:
             return True
-        end_time = self.start_time + timedelta(seconds=self.duration)
-        return datetime.now() >= end_time
+        return current_turn >= self.start_turn + self.duration_turns
 
-    @property
-    def time_remaining(self):
-        if self.duration == 0:
+
+    def turns_remaining(self, current_turn):
+        if self.duration_turns == 0:
             return 0
-        end_time = self.start_time + timedelta(seconds=self.duration)
-        remaining = (end_time - datetime.now()).total_seconds()
+        remaining = (self.start_turn + self.duration_turns) - current_turn
         return max(0, remaining)

@@ -66,46 +66,75 @@ class Player(Entity):
         self.equipped_armor = armor
 
 
-    def apply_effect(self, effect, potion):
+    def apply_effect(self, effect, potion, current_turn):
         if not isinstance(effect, Effect):
             raise TypeError("effect must be an Effect instance.")
+        from items.potion import Potion
+        if not isinstance(potion, Potion):
+            raise TypeError("potion must be a Potion instance.")
 
-        pe = PlayerEffect(self, effect, potion)
-        self.active_effects.append(pe)
+        player_effect = PlayerEffect(
+            player=self,
+            effect=effect,
+            source=potion,
+            source_type='potion',
+            duration_turns=potion.duration,
+            start_turn=current_turn
+        )
+        self.active_effects.append(player_effect)
 
-    def remove_effect(self, effect):
-        self.active_effects = [
-            pe for pe in self.active_effects
-            if pe.effect != effect
-        ]
+    def apply_effect_from_activity(self, effect, activity, current_turn, duration_turns=3):
+        if not isinstance(effect, Effect):
+            raise TypeError("effect must be an Effect instance.")
+        from activity import Activity
+        if not isinstance(activity, Activity):
+            raise TypeError("activity must be an Activity instance.")
 
-    def remove_expired_effects(self):
-        self.active_effects = [
-            pe for pe in self.active_effects
-            if not pe.is_expired
-        ]
+        player_effect = PlayerEffect(
+            player=self,
+            effect=effect,
+            source=activity,
+            source_type='activity',
+            duration_turns=duration_turns,
+            start_turn=current_turn
+        )
+        self.active_effects.append(player_effect)
 
-    def get_effect_time_remaining(self, effect):
-        for pe in self.active_effects:
-            if pe.effect == effect:
-                return pe.time_remaining
-        return 0
+    def remove_effect(self, player_effect):
+        if player_effect in self.active_effects:
+            self.active_effects.remove(player_effect)
 
-    def get_active_effect_names(self):
-        self.remove_expired_effects()
+
+    def remove_expired_effects(self, current_turn):
+        expired = [pe for pe in self.active_effects if pe.is_expired(current_turn)]
+        for player_effect in expired:
+            self.remove_effect(player_effect)
+
+
+    def get_active_effect_names(self, current_turn):
+        self.remove_expired_effects(current_turn)
         result = []
-        for pe in self.active_effects:
-            if pe.duration == 0:
-                result.append(f"{pe.effect.name} (instant)")
+        for player_effect in self.active_effects:
+            if player_effect.duration_turns == 0:
+                result.append(f"{player_effect.effect.name} (instant)")
             else:
-                result.append(f"{pe.effect.name} ({int(pe.time_remaining)}s remaining)")
+                turns_left = player_effect.turns_remaining(current_turn)
+                result.append(f"{player_effect.effect.name} ({turns_left} turns remaining)")
         return result
 
-    def get_effect_potion(self, effect):
+
+    def has_effect(self, effect, current_turn):
+        self.remove_expired_effects(current_turn)
+        return any(pe.effect == effect for pe in self.active_effects)
+
+
+    def get_effect_by_type(self, effect, current_turn):
+        self.remove_expired_effects(current_turn)
         for pe in self.active_effects:
             if pe.effect == effect:
-                return pe.potion
+                return pe
         return None
+
 
     def slay_monster(self, enemy):
         if not isinstance(enemy, Enemy):

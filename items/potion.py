@@ -41,7 +41,8 @@ class Potion(Consumable):
 
         self._effect = new_effect
 
-    def use_on_player(self, player):
+
+    def use_on_player(self, player, current_turn):
         from entities.player import Player
         if not isinstance(player, Player):
             raise TypeError("player must be a Player instance.")
@@ -52,7 +53,7 @@ class Potion(Consumable):
         )
 
         if self.effect is not None:
-            player.apply_effect(self.effect, self)
+            player.apply_effect(self.effect, self, current_turn)
 
         self.number_of_uses -= 1
 

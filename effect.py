@@ -1,6 +1,7 @@
 import pickle
 import os
 
+
 class Effect:
     _extent = []
 
@@ -20,22 +21,48 @@ class Effect:
         self.description = description
 
         self._potions = []
+        self._activities = []
 
     @property
     def potions(self):
         return self._potions.copy()
 
+
     def add_potion(self, potion):
         if potion not in self._potions:
             self._potions.append(potion)
+
 
     def remove_potion(self, potion):
         if potion in self._potions:
             self._potions.remove(potion)
 
+
+    @property
+    def activities(self):
+        return self._activities.copy()
+
+    def add_activity(self, activity):
+        if activity not in self._activities:
+            self._activities.append(activity)
+
+    def remove_activity(self, activity):
+        if activity in self._activities:
+            self._activities.remove(activity)
+
+    def get_all_sources(self):
+        return {
+            'potions': self._potions.copy(),
+            'activities': self._activities.copy()
+        }
+
+
     def delete(self):
         for potion in self._potions.copy():
             potion.effect = None
+
+        for activity in self._activities.copy():
+            activity.effect = None
 
         if self in self.__class__._extent:
             self.__class__._extent.remove(self)

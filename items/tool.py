@@ -54,3 +54,9 @@ class Tool(Item):
 
         self.durability += amount
         return f"{self.name} repaired! Durability: {self.durability}"
+
+    def perform_activity(self, player):
+        if self.activity is None:
+            raise ValueError(f"{self.name} has no associated activity.")
+
+        return self.activity.perform(player, tool=self)
