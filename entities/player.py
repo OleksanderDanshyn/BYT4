@@ -117,13 +117,26 @@ class Player(Entity):
         self.kills.append(enemy)
         enemy.add_killer(self)
 
-    # pet aggregation association implementation?
+
     def add_pet(self, pet):
+        if not isinstance(pet, Friendly):
+            raise TypeError("Pet must be a Friendly instance.")
 
         if pet in self.pets:
             raise ValueError("Pet already in pet list.")
 
-        if not isinstance(pet, Friendly):
-            raise TypeError("Pet must be an Friendly instance.")
+        if not pet.tameable:
+            raise ValueError(f"{pet.name} cannot be tamed.")
+
+        if pet._owner is not None:
+            raise ValueError(f"{pet.name} is already tamed.")
 
         self.pets.append(pet)
+        pet._owner = self
+
+    def remove_pet(self, pet):
+        if pet not in self.pets:
+            raise ValueError("Pet not in pet list.")
+
+        self.pets.remove(pet)
+        pet._owner = None

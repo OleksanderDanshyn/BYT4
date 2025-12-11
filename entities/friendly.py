@@ -9,7 +9,7 @@ class Friendly(NPC):
         self.tameable = tameable
 
         self.reputation = reputation
-
+        self._owner = None
 
     @property
     def reputation(self):
@@ -22,3 +22,9 @@ class Friendly(NPC):
         if not (0 <= value <= 100):
             raise ValueError("Reputation must be between 0 and 100.")
         self._reputation = value
+
+    def get_owner(self):
+        return self._owner
+
+    def is_tamed(self):
+        return self._owner is not None
