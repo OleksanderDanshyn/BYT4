@@ -1,7 +1,6 @@
 import pickle
 import os
 
-
 class Effect:
     _extent = []
 

@@ -1,10 +1,7 @@
 import pickle
 import os
-from entities.npc import NPC
-from entities.trader import Trader
-from items.armor import Armor
-from items.potion import Potion
-from items.weapon import Weapon
+
+
 
 
 class Item:
@@ -60,6 +57,9 @@ class Item:
 
     @classmethod
     def combine_items(cls, item1, item2, new_name=None):
+        from items.armor import Armor
+        from items.potion import Potion
+        from items.weapon import Weapon
         if type(item1) != type(item2):
             raise TypeError("Can only combine items of the same type.")
 
@@ -167,6 +167,7 @@ class Item:
 
 
     def add_holder(self, npc):
+        from entities.npc import NPC
         if not isinstance(npc, NPC):
             raise TypeError("Holder must be an NPC object.")
         if npc not in self._holders:
@@ -183,6 +184,7 @@ class Item:
 
 
     def add_trader(self, trader):
+        from entities.trader import Trader
         if not isinstance(trader, Trader):
             raise TypeError("Must be a Trader object.")
         if trader not in self._traders:
