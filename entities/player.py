@@ -27,7 +27,7 @@ class Player(Entity):
 
         self.kills = []
 
-        self.active_effects = {}
+        self.active_effects = []
 
         Player._extent.append(self)
 
