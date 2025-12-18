@@ -1,11 +1,16 @@
 from entities.npc import NPC
 
 
-class Friendly(NPC):
-    def __init__(self, drop, name, current_health, tameable, reputation):
-        super().__init__(drop, name, current_health)
+class Friendly:
+    def __init__(self, npc, tameable, reputation):
+        if not isinstance(npc, NPC):
+            raise TypeError("Friendly must be associated with an NPC.")
+
+        self.npc = npc
+        npc.set_friendly(self)
+
         if not isinstance(tameable, bool):
-            raise TypeError("Tameable must be a boolean (True or False).")
+            raise TypeError("Tameable must be a boolean.")
         self.tameable = tameable
 
         self.reputation = reputation

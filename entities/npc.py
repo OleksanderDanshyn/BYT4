@@ -13,6 +13,8 @@ class NPC(Entity):
 
         self._drop = None
         self.drop = drop
+        self._friendly = None
+        self._enemy = None
 
     @property
     def drop(self):
@@ -31,3 +33,19 @@ class NPC(Entity):
         self._drop = item
 
         self._drop.add_holder(self)
+
+    def set_friendly(self, friendly):
+        if self._enemy is not None:
+            raise ValueError("NPC cannot be both Friendly and Enemy.")
+        self._friendly = friendly
+
+    def set_enemy(self, enemy):
+        if self._friendly is not None:
+            raise ValueError("NPC cannot be both Friendly and Enemy.")
+        self._enemy = enemy
+
+    def is_friendly(self):
+        return self._friendly is not None
+
+    def is_enemy(self):
+        return self._enemy is not None

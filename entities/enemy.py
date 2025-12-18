@@ -1,12 +1,17 @@
 from entities.npc import NPC
 
 
-class Enemy(NPC):
-    def __init__(self, drop, name, current_health, damage):
-        super().__init__(drop, name, current_health)
-        self.damage = damage
+class Enemy:
+    def __init__(self, npc, damage):
+        if not isinstance(npc, NPC):
+            raise TypeError("Enemy must be associated with an NPC.")
 
-        self.killed_by = []  # reverse association
+        self.npc = npc
+        npc.set_enemy(self)
+
+        self.damage = damage
+        self.killed_by = []
+
 
     @property
     def damage(self):
