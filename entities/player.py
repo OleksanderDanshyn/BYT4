@@ -179,3 +179,17 @@ class Player(Entity):
         if event.check_event_success() is True:
             self.inventory.add_item(event.item_reward)
             self.money.__add__(event.money_reward)
+
+    def die(self):
+        for pet in self.pets:
+            pet._owner = None
+        self.pets.clear()
+
+        self.active_effects.clear()
+
+        if self.inventory is not None:
+            self.inventory.delete()
+            self.inventory = None
+
+        if self in Player._extent:
+            Player._extent.remove(self)
