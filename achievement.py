@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Iterable
+from copy import deepcopy
 
-from extentbase import ExtentBase
 from items.item import Item
 from utils import is_nonempty_str
 
 
-class Achievement(ExtentBase):
+class Achievement():
     title: str  # basic
     description: str  # basic
     _completed_at: datetime | None = None  # optional, complex
@@ -21,7 +21,8 @@ class Achievement(ExtentBase):
         self._rewards = list(rewards)
         self._completed_at = None
 
-        super().__init__()
+        # Add self to extent
+        Achievement._extent.append(self)
 
     @property
     def rewards(self) -> list[Item]:
@@ -37,7 +38,10 @@ class Achievement(ExtentBase):
 
     @staticmethod
     def get_all() -> list["Achievement"]:
-        return Achievement._extent.copy()
+        """This implementation should stay separate from {Achievement.get_extent}, as it serves a different purpose.
+        This is a public function, wherease {Achievement.get_extent} is only for use with serialisation and may have a slightly different implementation.
+        """
+        return deepcopy(Achievement._extent)
 
     @staticmethod
     def get_completed() -> list["Achievement"]:
@@ -46,3 +50,37 @@ class Achievement(ExtentBase):
     def complete(self):
         if self._completed_at is None:
             self._completed_at = datetime.now()
+
+    # Extent
+    @classmethod
+    def get_extent(cls):
+        return deepcopy(cls._extent)
+    @classmethod
+    def save_extent(cls, filename=None):
+        if filename is None:
+            filename = f"{cls.__name__.lower()}s.dat"
+        with open(filename, "wb") as file:
+            pickle.dump(cls._extent, file)
+    @classmethod
+    def load_extent(cls, filename=None):
+        if filename is None:
+            filename = f"{cls.__name__.lower()}s.dat"
+        if os.path.exists(filename):
+            with open(filename, "rb") as file:
+                cls._extent = pickle.load(file)
+        else:
+            cls._extent = []
+
+    @classmethod
+    def clear_extent(cls):
+        for instance in cls._extent:
+            del instance
+        # The extent should be cleared by now.
+        assert not cls._extent
+    
+    def __del__(self):
+        if self in self.__class__._extent:
+            # Remove self from the extent list
+            self.__class__._extent.remove(self)
+        # Delete ourselves
+        super.__del__(self)
